@@ -1,0 +1,15 @@
+.main {
+  @apply flex bg-gray-200 h-full border-gray-500 p-2 rounded-md  overflow-auto;
+}
+
+.bt-fun {
+  @apply flex items-center justify-center bg-blue-600 w-[150px] h-[40px] border-4 border-black rounded-md hover:bg-green-500 hover:border-green-500 text-white font-bold;
+}
+
+.bt-file {
+  @apply flex items-center justify-center bg-stone-600 w-full h-[40px] border-4 border-black rounded-md hover:bg-green-500 hover:border-green-500 text-white font-bold;
+}
+
+.input-style {
+  @apply pl-2 pr-2 w-full border-[3px] border-gray-300 rounded-md font-medium hover:border-green-300 focus:border-green-500 focus:outline-none;
+}

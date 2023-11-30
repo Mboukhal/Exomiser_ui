@@ -1,0 +1,3 @@
+.menu_button {
+  @apply flex w-[150px] items-center justify-center font-wellfleet border-4 border-black rounded-md bg-gray-200 hover:bg-green-400 hover:border-green-400;
+}

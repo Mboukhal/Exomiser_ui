@@ -1,0 +1,28 @@
+
+    Analysis analysis = exomiser.getAnalysisBuilder()
+              +  .genomeAssembly(GenomeAssembly.HG19)
+                .vcfPath(vcfPath)
+                .pedPath(pedPath)
+              - .probandSampleName(probandSampleId)
+              -  .hpoIds(phenotypes)   
+              +  .analysisMode(AnalysisMode.PASS_ONLY)
+              -  .modeOfInheritance(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE))
+                .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
+                .pathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT))
+                .addPhivePrioritiser()
+                .addPriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.501f)
+                .addQualityFilter(500.0)
+                .addRegulatoryFeatureFilter()
+                .addFrequencyFilter(0.01f)
+                .addPathogenicityFilter(true)
+                .addInheritanceFilter()
+                .addOmimPrioritiser()
+                .build();
+                
+
+{
+  "file1":{
+    "file": "file1",
+    "ag":"",
+  }
+}
