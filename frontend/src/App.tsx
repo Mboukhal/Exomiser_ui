@@ -11,7 +11,7 @@ const App = () => {
         <Routes>
           <Route index element={<AppMenu />}></Route>
           <Route path={"/Exomiser"} element={<AppMenu />}>
-            <Route index element={<Exomiser />}></Route>
+            <Route path="e" element={<Exomiser />}></Route>
             <Route path="*" element={<ErrorPage />}></Route>
           </Route>
           <Route path="/Phenotips" element={<AppMenu />}></Route>

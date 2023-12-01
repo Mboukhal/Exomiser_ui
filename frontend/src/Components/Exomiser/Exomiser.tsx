@@ -1,5 +1,7 @@
 // import { Route } from "react-router";
+import { useCallback, useState } from "react";
 import "./Exomiser.css";
+import { useDropzone } from "react-dropzone";
 
 const dropList = (name: string, id: string, options: string[]) => {
   return (
@@ -54,7 +56,7 @@ const FileForm = () => {
 const bt_file = (name: string) => {
   return (
     <>
-      <div className="flex justify-center items-center w-full gap-2">
+      <div className="bt-check-box ">
         <input
           type="checkbox"
           value=""
@@ -81,13 +83,69 @@ const FileList = () => {
 };
 
 export const Exomiser = () => {
+  const [files, setAddFiles] = useState<Set<File> | null>(null);
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      // Filter only files with the .vcf extension
+      const vcfFiles = acceptedFiles.filter((file) =>
+        file.name.endsWith(".vcf")
+      );
+
+      // Alert for non-.vcf files
+      const nonVcfFiles = acceptedFiles.filter(
+        (file) => !file.name.endsWith(".vcf")
+      );
+      if (nonVcfFiles.length > 0) {
+        alert(
+          `The following files are not .vcf: ${nonVcfFiles
+            .map((file) => file.name)
+            .join(", ")}`
+        );
+      }
+
+      setAddFiles([...(files || []), ...vcfFiles]);
+    },
+    [files]
+  );
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: "application/octet-stream", // Specify the accepted file types
+  });
+
+  const btAddFile = () => {
+    return (
+      <div className="bt-check-box ">
+        <input
+          type="checkbox"
+          value=""
+          className=" w-8 h-8 text-green-600 bg-gray-100 border-gray-300 rounded  dark:focus:ring-green-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+        ></input>
+        <div {...getRootProps()} className="bt-file">
+          <input {...getInputProps()} />
+          <span> Drop .vcf files here </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className="flex flex-col w-full p-[20px] "
       style={{ height: "calc(100% - 100px)" }}
     >
       <div className="flex " style={{ height: "calc(100% - 50px)" }}>
-        <div className="w-[30%] border-4 main">{FileList()}</div>
+        <div className="w-fit border-4 main">
+          <div className="flex flex-col gap-y-2 items-start w-full ">
+            {btAddFile()}
+            {files?.length && (
+              <div className="flex flex-col items-start w-full ">
+                {files.map((file) => bt_file(file.name))}
+              </div>
+            )}
+          </div>
+        </div>
         <div className="flex flex-col w-full border-r-4 border-y-4 main pt-[30px]">
           {FileForm()}
         </div>

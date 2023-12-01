@@ -7,7 +7,7 @@ const genarateMenu = (name: string) => {
       className={({ isActive }) => {
         return `menu_button ${isActive && ` bg-green-500 `}`;
       }}
-      to={`/${name == "Home" ? "" : name}`}
+      to={`/${name == "Home" ? "" : `${name}/e`}`}
     >
       {name}
     </NavLink>
