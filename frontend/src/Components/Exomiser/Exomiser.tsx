@@ -2,6 +2,126 @@
 import { useCallback, useState } from "react";
 import "./Exomiser.css";
 import { useDropzone } from "react-dropzone";
+import { TformOptions } from "./Exomiser.d";
+
+export const Exomiser = () => {
+  const [options, setOptions] = useState<TformOptions[] | null>(null);
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      // Filter only files with the .vcf extension
+      const vcfFiles = acceptedFiles.filter((file) =>
+        file.name.endsWith(".vcf")
+      );
+
+      // Remove duplicates
+      const dupFilter = [...new Set(vcfFiles)];
+      // Alert for non-.vcf files
+      const nonVcfFiles = acceptedFiles.filter(
+        (file) => !file.name.endsWith(".vcf")
+      );
+      if (nonVcfFiles.length > 0) {
+        alert(
+          `The following files are not .vcf: ${nonVcfFiles
+            .map((file) => file.name)
+            .join(", ")}`
+        );
+      }
+
+      // Remove duplicates file - options
+      const setDupFilter = dupFilter.filter((file) => {
+        const isDuplicate = options?.some(
+          (option) => option.file.name === file.name
+        );
+
+        if (isDuplicate) {
+          alert(`The file ${file.name} is already in the list`);
+        }
+
+        return !isDuplicate;
+      });
+
+      console.log(setDupFilter.length);
+      const newfile: TformOptions[] = [];
+      // Add files to options
+      setDupFilter.forEach((file, index) => {
+        newfile.push({
+          id: (options && options?.length + index) || index,
+          file: file,
+          firstName: "",
+          lastName: "",
+          adn: "",
+          genomeAssembly: "",
+          analysisMode: "",
+          hpo: "",
+          probandSampleName: "",
+          modeOfInheritance: "",
+        });
+      });
+      setOptions([...(options || []), ...newfile]);
+    },
+    [options]
+  );
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+  });
+
+  const btAddFile = () => {
+    return (
+      <div className="bt-check-box">
+        <input type="checkbox" value="" className="check-box"></input>
+        <div {...getRootProps()} className="bt-file">
+          <input {...getInputProps()} />
+          <span> Add Files </span>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className="flex flex-col w-full p-[20px] "
+      style={{ height: "calc(100% - 100px)" }}
+    >
+      <div className="flex w-full" style={{ height: "calc(100% - 50px)" }}>
+        <div className="w-fit border-4 main ">
+          <div className="flex flex-col gap-y-2 items-start w-full ">
+            {btAddFile()}
+            {options && options.length !== 0 && (
+              <div className="flex flex-col items-start w-full gap-2">
+                {options.map((file) => bt_file(file.file.name, file.id))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col w-full border-r-4 border-y-4 main pt-[30px]">
+          {FileForm()}
+        </div>
+      </div>
+      <div className="flex h-[50px] justify-between pt-[20px] gap-2 px-3">
+        <button className="bt-fun">Remove</button>
+        <button className="bt-fun">Start</button>
+      </div>
+    </div>
+  );
+};
+
+// {
+//   files : {
+//     file: {
+//          filePath: '',
+//          firstName: '';
+//          lastName: '';
+//          adn: '';
+//          genomeAssembly: '';
+//          analysisMode: '';
+//          hpo: '';
+//          probandSampleName: '';
+//          modeOfInheritance: '';
+//         }
+//   }
+//  }
 
 const dropList = (name: string, id: string, options: string[]) => {
   return (
@@ -10,8 +130,10 @@ const dropList = (name: string, id: string, options: string[]) => {
         {name}
       </label>
       <select className="text-center input-style" name={id}>
-        {options.map((option) => (
-          <option value={option}>{option}</option>
+        {options.map((option, index) => (
+          <option value={option} key={index}>
+            {option}
+          </option>
         ))}
       </select>
     </div>
@@ -53,107 +175,25 @@ const FileForm = () => {
   );
 };
 
-const bt_file = (name: string) => {
+const bt_file = (name: string, id: number) => {
   return (
-    <>
-      <div className="bt-check-box ">
-        <input
-          type="checkbox"
-          value=""
-          className=" w-8 h-8 text-green-600 bg-gray-100 border-gray-300 rounded  dark:focus:ring-green-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-        ></input>
-        <button className="bt-file">{name}</button>
-      </div>
-    </>
-  );
-};
-
-const FileList = () => {
-  return (
-    <>
-      <div className="flex flex-col gap-y-2 items-start w-full ">
-        {bt_file("Add file")}
-        {bt_file("file 1")}
-        {bt_file("file 2")}
-        {bt_file("file 3")}
-        {bt_file("file 4")}
-      </div>
-    </>
-  );
-};
-
-export const Exomiser = () => {
-  const [files, setAddFiles] = useState<Set<File> | null>(null);
-
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      // Filter only files with the .vcf extension
-      const vcfFiles = acceptedFiles.filter((file) =>
-        file.name.endsWith(".vcf")
-      );
-
-      // Alert for non-.vcf files
-      const nonVcfFiles = acceptedFiles.filter(
-        (file) => !file.name.endsWith(".vcf")
-      );
-      if (nonVcfFiles.length > 0) {
-        alert(
-          `The following files are not .vcf: ${nonVcfFiles
-            .map((file) => file.name)
-            .join(", ")}`
-        );
-      }
-
-      setAddFiles([...(files || []), ...vcfFiles]);
-    },
-    [files]
-  );
-
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: "application/octet-stream", // Specify the accepted file types
-  });
-
-  const btAddFile = () => {
-    return (
-      <div className="bt-check-box ">
-        <input
-          type="checkbox"
-          value=""
-          className=" w-8 h-8 text-green-600 bg-gray-100 border-gray-300 rounded  dark:focus:ring-green-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-        ></input>
-        <div {...getRootProps()} className="bt-file">
-          <input {...getInputProps()} />
-          <span> Drop .vcf files here </span>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div
-      className="flex flex-col w-full p-[20px] "
-      style={{ height: "calc(100% - 100px)" }}
-    >
-      <div className="flex " style={{ height: "calc(100% - 50px)" }}>
-        <div className="w-fit border-4 main">
-          <div className="flex flex-col gap-y-2 items-start w-full ">
-            {btAddFile()}
-            {files?.length && (
-              <div className="flex flex-col items-start w-full ">
-                {files.map((file) => bt_file(file.name))}
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-col w-full border-r-4 border-y-4 main pt-[30px]">
-          {FileForm()}
-        </div>
-      </div>
-      <div className="flex h-[50px] justify-between pt-[20px] gap-2 px-3">
-        <button className="bt-fun">Remove</button>
-        <button className="bt-fun">Start</button>
-      </div>
+    <div className="bt-check-box" key={id}>
+      <input type="checkbox" value="" className="check-box"></input>
+      <button className="bt-file font-light">{name}</button>
     </div>
   );
 };
+
+// const FileList = () => {
+//   return (
+//     <>
+//       <div className="flex flex-col gap-y-2 items-start w-full ">
+//         {bt_file("Add file")}
+//         {bt_file("file 1")}
+//         {bt_file("file 2")}
+//         {bt_file("file 3")}
+//         {bt_file("file 4")}
+//       </div>
+//     </>
+//   );
+// };
