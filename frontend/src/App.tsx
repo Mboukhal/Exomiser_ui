@@ -9,9 +9,9 @@ const App = () => {
     <>
       <BrowserRouter>
         <Routes>
-          <Route index element={<AppMenu />}></Route>
-          <Route path={"/Exomiser"} element={<AppMenu />}>
-            <Route path="e" element={<Exomiser />}></Route>
+          <Route path="/home" element={<AppMenu />}></Route>
+          <Route path="/" element={<AppMenu />}>
+            <Route index element={<Exomiser />}></Route>
             <Route path="*" element={<ErrorPage />}></Route>
           </Route>
           <Route path="/Phenotips" element={<AppMenu />}></Route>

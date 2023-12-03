@@ -8,14 +8,14 @@ const genarateMenu = (name: string, index?: number) => {
       className={({ isActive }) => {
         return `menu_button ${isActive && ` bg-green-500 `}`;
       }}
-      to={`/${name == "Home" ? "" : `${name}/e`}`}
+      to={`/${name == "Exomiser" ? "" : `${name}`}`}
     >
       {name}
     </NavLink>
   );
 };
 
-const apps = ["Exomiser", "Phenotips", "Phenolyzer"];
+const apps = ["Exomiser"];
 
 export const AppMenu = () => {
   return (

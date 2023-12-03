@@ -26,6 +26,49 @@ export const Exomiser = () => {
     });
   };
 
+  const UpdateDropList = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = event.target;
+    setOptions((prevOptions) => {
+      if (!prevOptions) return prevOptions;
+
+      const updatedOptions = prevOptions.map((option, index) => {
+        if (index === (activeForm || 0)) {
+          return {
+            ...option,
+            [name]: value,
+          };
+        }
+        return option;
+      });
+
+      return updatedOptions;
+    });
+  };
+
+  const dropList = (name: string, id: string, optionsList: string[]) => {
+    const opt = options && options[activeForm || 0][id];
+    if (!opt) return;
+    return (
+      <div className="flex p-2 gap-4 w-full">
+        <label className="flex items-center justify-start min-w-[167px]">
+          {name}
+        </label>
+        <select
+          className="text-center input-style"
+          name={id}
+          onChange={UpdateDropList}
+          value={opt?.toString()}
+        >
+          {optionsList.map((option, index) => (
+            <option value={option} key={index}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  };
+
   const UpdateSetThisToAllFiles = () => {
     setOptions((prevOptions) => {
       if (!prevOptions) return prevOptions;
@@ -62,8 +105,8 @@ export const Exomiser = () => {
             firstName: "",
             lastName: "",
             adn: "",
-            genomeAssembly: "",
-            analysisMode: "",
+            genomeAssembly: "hg19",
+            analysisMode: "PASS_ONLY",
             hpo: "",
             probandSampleName: "",
             modeOfInheritance: "",
@@ -102,8 +145,8 @@ export const Exomiser = () => {
           {input("HPO", "hpo")}
           {input("Proband Sample Name", "probandSampleName")}
           {input("Mode Of Inheritance", "modeOfInheritance")}
-          {dropList("Genome Assembly", "ag", ["hg19", "hg38"])}
-          {dropList("Analysis Mode", "am", ["PASS_ONLY"])}
+          {dropList("Genome Assembly", "genomeAssembly", ["hg19", "hg38"])}
+          {dropList("Analysis Mode", "analysisMode", ["PASS_ONLY"])}
         </div>
         <div className="flex justify-end gap-2">
           <div className=" flex flex-grow">
@@ -134,7 +177,7 @@ export const Exomiser = () => {
     if (opt)
       return (
         <div className="flex p-2 gap-4 w-full">
-          <label className="flex items-center justify-start min-w-[180px]">
+          <label className="flex items-center justify-start min-w-[167px]">
             {name}
           </label>
           <input
@@ -156,7 +199,7 @@ export const Exomiser = () => {
         <input type="checkbox" value="" className="check-box"></input>
         <button
           className={`bt-file font-light ${
-            activeForm === id && ` bg-yellow-300 text-slate-600`
+            activeForm === id && ` bg-yellow-300 text-slate-600 w-fit-content`
           }`}
           onClick={() => {
             setActiveForm(id);
@@ -207,8 +250,8 @@ export const Exomiser = () => {
           firstName: "",
           lastName: "",
           adn: "",
-          genomeAssembly: "",
-          analysisMode: "",
+          genomeAssembly: "hg19",
+          analysisMode: "PASS_ONLY",
           hpo: "",
           probandSampleName: "",
           modeOfInheritance: "",
@@ -230,7 +273,7 @@ export const Exomiser = () => {
         <input type="checkbox" value="" className="check-box"></input>
         <div
           {...getRootProps()}
-          className="bt-file bg-blue-500 border-2 border-black"
+          className="bt-file bg-blue-500 border-2 border-black whitespace-nowrap "
         >
           <input {...getInputProps()} />
           <span> Add Files </span>
@@ -245,7 +288,7 @@ export const Exomiser = () => {
       style={{ height: "calc(100% - 100px)" }}
     >
       <div className="flex w-full" style={{ height: "calc(100% - 50px)" }}>
-        <div className="w-fit border-4 main ">
+        <div className="min-w-[30%] md:min-w-fit border-4 main ">
           <div className="flex flex-col w-full gap-y-2 items-start ">
             {btAddFile()}
             {options && options.length !== 0 && (
@@ -270,23 +313,6 @@ export const Exomiser = () => {
           Start
         </button>
       </div>
-    </div>
-  );
-};
-
-const dropList = (name: string, id: string, options: string[]) => {
-  return (
-    <div className="flex p-2 gap-4 w-full">
-      <label className="flex items-center justify-start min-w-[180px]">
-        {name}
-      </label>
-      <select className="text-center input-style" name={id}>
-        {options.map((option, index) => (
-          <option value={option} key={index}>
-            {option}
-          </option>
-        ))}
-      </select>
     </div>
   );
 };
