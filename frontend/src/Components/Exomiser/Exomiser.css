@@ -3,12 +3,12 @@
 }
 
 .bt-fun {
-  @apply flex items-center justify-center bg-blue-600 w-[150px] h-[40px] border-2 border-black rounded-md hover:bg-green-500 hover:border-green-500 text-white font-bold;
+  @apply flex items-center justify-center bg-blue-600 w-[150px] h-[40px] border-2 border-black rounded-md hover:bg-green-500 hover:border-green-500 text-white font-bold cursor-pointer;
 }
 
 .bt-file {
   @apply flex items-center justify-center bg-stone-600  min-w-full 
-   p-1 rounded-md hover:bg-green-500 hover:border-green-500 text-white;
+   p-1 rounded-md hover:bg-green-500 hover:border-green-500 text-white cursor-pointer;
 }
 
 .input-style {

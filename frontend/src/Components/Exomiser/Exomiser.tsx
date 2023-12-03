@@ -6,6 +6,168 @@ import { TformOptions } from "./Exomiser.d";
 
 export const Exomiser = () => {
   const [options, setOptions] = useState<TformOptions[] | null>(null);
+  const [activeForm, setActiveForm] = useState<number | null>(null);
+
+  const inputHandleChange = (fieldName: string, newValue: string) => {
+    setOptions((prevOptions) => {
+      if (!prevOptions) return prevOptions;
+
+      const updatedOptions = prevOptions.map((option, index) => {
+        if (index === (activeForm || 0)) {
+          return {
+            ...option,
+            [fieldName]: newValue,
+          };
+        }
+        return option;
+      });
+
+      return updatedOptions;
+    });
+  };
+
+  const UpdateSetThisToAllFiles = () => {
+    setOptions((prevOptions) => {
+      if (!prevOptions) return prevOptions;
+
+      const updatedOptions = prevOptions.map((option, index) => {
+        if (index !== (activeForm || 0)) {
+          return {
+            ...option,
+            firstName: prevOptions[0].firstName,
+            lastName: prevOptions[0].lastName,
+            adn: prevOptions[0].adn,
+            genomeAssembly: prevOptions[0].genomeAssembly,
+            analysisMode: prevOptions[0].analysisMode,
+            hpo: prevOptions[0].hpo,
+            probandSampleName: prevOptions[0].probandSampleName,
+            modeOfInheritance: prevOptions[0].modeOfInheritance,
+          };
+        }
+        return option;
+      });
+
+      return updatedOptions;
+    });
+  };
+
+  const updateClear = () => {
+    setOptions((prevOptions) => {
+      if (!prevOptions) return prevOptions;
+
+      const updatedOptions = prevOptions.map((option, index) => {
+        if (index === (activeForm || 0)) {
+          return {
+            ...option,
+            firstName: "",
+            lastName: "",
+            adn: "",
+            genomeAssembly: "",
+            analysisMode: "",
+            hpo: "",
+            probandSampleName: "",
+            modeOfInheritance: "",
+          };
+        }
+        return option;
+      });
+
+      return updatedOptions;
+    });
+  };
+
+  const updateRemoveAllFiles = () => {
+    if (!options) return;
+    const shouldRemove = window.confirm(
+      "Are you sure you want to remove all files?"
+    );
+    if (!shouldRemove) return;
+    setOptions(null);
+    setActiveForm(null);
+  };
+
+  const FileForm = () => {
+    const opt = options && options[activeForm || 0];
+    if (!opt) return <>no file</>;
+
+    return (
+      <>
+        <div className="flex flex-col flex-grow py-2">
+          <label className="flex justify-center font-bold">
+            {opt.file.name}
+          </label>
+          {input("First name", "firstName")}
+          {input("Last name", "lastName")}
+          {input("ADN", "adn")}
+          {input("HPO", "hpo")}
+          {input("Proband Sample Name", "probandSampleName")}
+          {input("Mode Of Inheritance", "modeOfInheritance")}
+          {dropList("Genome Assembly", "ag", ["hg19", "hg38"])}
+          {dropList("Analysis Mode", "am", ["PASS_ONLY"])}
+        </div>
+        <div className="flex justify-end gap-2">
+          <div className=" flex flex-grow">
+            <button className="bt-fun" onClick={UpdateSetThisToAllFiles}>
+              Set all
+            </button>
+          </div>
+          <button className="bt-fun" onClick={updateClear}>
+            Clear
+          </button>
+          <button
+            className="bt-fun"
+            onClick={() => {
+              activeForm !== null && options.length - 1 > activeForm
+                ? setActiveForm(activeForm + 1)
+                : setActiveForm(0);
+            }}
+          >
+            Next
+          </button>
+        </div>
+      </>
+    );
+  };
+
+  const input = (name: string, fieldName: string) => {
+    const opt = options && options[activeForm || 0];
+    if (opt)
+      return (
+        <div className="flex p-2 gap-4 w-full">
+          <label className="flex items-center justify-start min-w-[180px]">
+            {name}
+          </label>
+          <input
+            className="input-style"
+            type="text"
+            name={fieldName}
+            value={opt[fieldName]?.toString()}
+            onChange={(event) =>
+              inputHandleChange(fieldName, event.target.value)
+            }
+          />
+        </div>
+      );
+  };
+
+  const bt_file = (name: string, id: number) => {
+    return (
+      <div className="bt-check-box" key={id}>
+        <input type="checkbox" value="" className="check-box"></input>
+        <button
+          className={`bt-file font-light ${
+            activeForm === id && ` bg-yellow-300 text-slate-600`
+          }`}
+          onClick={() => {
+            setActiveForm(id);
+            console.log(id);
+          }}
+        >
+          {name}
+        </button>
+      </div>
+    );
+  };
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -33,15 +195,9 @@ export const Exomiser = () => {
         const isDuplicate = options?.some(
           (option) => option.file.name === file.name
         );
-
-        if (isDuplicate) {
-          alert(`The file ${file.name} is already in the list`);
-        }
-
         return !isDuplicate;
       });
 
-      console.log(setDupFilter.length);
       const newfile: TformOptions[] = [];
       // Add files to options
       setDupFilter.forEach((file, index) => {
@@ -57,6 +213,7 @@ export const Exomiser = () => {
           probandSampleName: "",
           modeOfInheritance: "",
         });
+        setActiveForm(0);
       });
       setOptions([...(options || []), ...newfile]);
     },
@@ -71,7 +228,10 @@ export const Exomiser = () => {
     return (
       <div className="bt-check-box">
         <input type="checkbox" value="" className="check-box"></input>
-        <div {...getRootProps()} className="bt-file">
+        <div
+          {...getRootProps()}
+          className="bt-file bg-blue-500 border-2 border-black"
+        >
           <input {...getInputProps()} />
           <span> Add Files </span>
         </div>
@@ -86,7 +246,7 @@ export const Exomiser = () => {
     >
       <div className="flex w-full" style={{ height: "calc(100% - 50px)" }}>
         <div className="w-fit border-4 main ">
-          <div className="flex flex-col gap-y-2 items-start w-full ">
+          <div className="flex flex-col w-full gap-y-2 items-start ">
             {btAddFile()}
             {options && options.length !== 0 && (
               <div className="flex flex-col items-start w-full gap-2">
@@ -95,33 +255,24 @@ export const Exomiser = () => {
             )}
           </div>
         </div>
-        <div className="flex flex-col w-full border-r-4 border-y-4 main pt-[30px]">
+        <div className="flex flex-col w-full border-r-4 border-y-4 main">
           {FileForm()}
         </div>
       </div>
       <div className="flex h-[50px] justify-between pt-[20px] gap-2 px-3">
-        <button className="bt-fun">Remove</button>
-        <button className="bt-fun">Start</button>
+        <button className="bt-fun" onClick={updateRemoveAllFiles}>
+          Remove
+        </button>
+        <button
+          className="bt-fun"
+          onClick={() => console.log(options[activeForm])}
+        >
+          Start
+        </button>
       </div>
     </div>
   );
 };
-
-// {
-//   files : {
-//     file: {
-//          filePath: '',
-//          firstName: '';
-//          lastName: '';
-//          adn: '';
-//          genomeAssembly: '';
-//          analysisMode: '';
-//          hpo: '';
-//          probandSampleName: '';
-//          modeOfInheritance: '';
-//         }
-//   }
-//  }
 
 const dropList = (name: string, id: string, options: string[]) => {
   return (
@@ -136,50 +287,6 @@ const dropList = (name: string, id: string, options: string[]) => {
           </option>
         ))}
       </select>
-    </div>
-  );
-};
-
-const input = (name: string, id: string) => {
-  return (
-    <div className="flex p-2 gap-4 w-full">
-      <label className="flex items-center justify-start min-w-[180px]">
-        {name}
-      </label>
-      <input className="input-style" type="text" name={id} />
-    </div>
-  );
-};
-
-const FileForm = () => {
-  return (
-    <>
-      <div className="flex flex-col flex-grow">
-        {input("First name", "fName")}
-        {input("Last name", "lName")}
-        {input("ADN", "adn")}
-        {dropList("Genome Assembly", "ag", ["hg19", "hg38"])}
-        {dropList("Analysis Mode", "am", ["PASS_ONLY"])}
-        {input("HPO", "hpo")}
-        {input("Proband Sample Name", "psn")}
-        {input("Mode Of Inheritance", "moi")}
-      </div>
-      <div className="flex justify-end gap-2">
-        <div className=" flex flex-grow">
-          <button className="bt-fun">Set all</button>
-        </div>
-        <button className="bt-fun">Clear</button>
-        <button className="bt-fun">Next</button>
-      </div>
-    </>
-  );
-};
-
-const bt_file = (name: string, id: number) => {
-  return (
-    <div className="bt-check-box" key={id}>
-      <input type="checkbox" value="" className="check-box"></input>
-      <button className="bt-file font-light">{name}</button>
     </div>
   );
 };

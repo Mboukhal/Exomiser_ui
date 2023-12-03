@@ -9,4 +9,5 @@ export type TformOptions = {
   hpo: string;
   probandSampleName: string;
   modeOfInheritance: string;
+  [key: string]: string | number | { name: string } | undefined;
 };
