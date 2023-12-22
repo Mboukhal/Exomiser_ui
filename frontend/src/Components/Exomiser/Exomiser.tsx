@@ -3,6 +3,10 @@ import { useCallback, useState } from "react";
 import "./Exomiser.css";
 import { useDropzone } from "react-dropzone";
 import { TformOptions } from "./Exomiser.d";
+import axios from "axios";
+
+const hopEndpoint = "https://hpo.jax.org/api/hpo/search?q=";
+const backendEndpoint = "http://127.0.0.1:8080/api/submitForm";
 
 export const Exomiser = () => {
   const [options, setOptions] = useState<TformOptions[] | null>(null);
@@ -54,7 +58,7 @@ export const Exomiser = () => {
           {name}
         </label>
         <select
-          className="text-center input-style"
+          className="text-center input-style bg-white"
           name={id}
           onChange={UpdateDropList}
           value={opt?.toString()}
@@ -136,7 +140,7 @@ export const Exomiser = () => {
     return (
       <>
         <div className="flex flex-col flex-grow py-2">
-          <label className="flex justify-center font-bold">
+          <label className="flex w-fit self-center font-bold border-b-2 border-blue-500 text-blue-500 mb-4">
             {opt.file.name}
           </label>
           {input("First name", "firstName")}
@@ -196,10 +200,10 @@ export const Exomiser = () => {
   const bt_file = (name: string, id: number) => {
     return (
       <div className="bt-check-box" key={id}>
-        <input type="checkbox" value="" className="check-box"></input>
+        {/* <input type="checkbox" value="" className="check-box"></input> */}
         <button
           className={`bt-file font-light ${
-            activeForm === id && ` bg-yellow-300 text-slate-600 w-fit-content`
+            activeForm === id && ` bg-blue-300 text-slate-600 w-fit-content`
           }`}
           onClick={() => {
             setActiveForm(id);
@@ -270,16 +274,53 @@ export const Exomiser = () => {
   const btAddFile = () => {
     return (
       <div className="bt-check-box">
-        <input type="checkbox" value="" className="check-box"></input>
+        {/* <input type="checkbox" value="" className="check-box"></input> */}
         <div
           {...getRootProps()}
           className="bt-file bg-blue-500 border-2 border-black whitespace-nowrap "
         >
           <input {...getInputProps()} />
-          <span> Add Files </span>
+          <span className="px-12"> Add Files </span>
         </div>
       </div>
     );
+  };
+
+  const sendFormData = async (formData: FormData) => {
+    try {
+      // Make a POST request to the backend endpoint
+      const response = await axios.post(backendEndpoint, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Handle the response from the backend
+      console.log("Backend Response:", response.data);
+    } catch (error) {
+      // Handle errors
+      console.log("Error sending form data:", error);
+    }
+  };
+
+  // Function to handle file upload
+  const handleFileUpload = (data: TformOptions[] | null) => {
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append the file to the FormData object
+    if (!data) return;
+
+    data.forEach((config, index) => {
+      formData.append(
+        index.toString(),
+        JSON.stringify(Object.entries(config).filter(([key]) => key !== "file"))
+      );
+      formData.append(`file${index.toString()}`, config.file);
+    });
+
+    // Send the FormData to the backend
+    sendFormData(formData);
   };
 
   return (
@@ -302,13 +343,16 @@ export const Exomiser = () => {
           {FileForm()}
         </div>
       </div>
-      <div className="flex h-[50px] justify-between pt-[20px] gap-2 px-3">
+      <div className="flex h-[50px] justify-between pt-[20px] gap-2 p-3">
         <button className="bt-fun" onClick={updateRemoveAllFiles}>
-          Remove
+          Remove All
         </button>
         <button
           className="bt-fun"
-          onClick={() => console.log(options[activeForm])}
+          onClick={() => {
+            if (!options) return;
+            handleFileUpload(options);
+          }}
         >
           Start
         </button>
@@ -316,17 +360,3 @@ export const Exomiser = () => {
     </div>
   );
 };
-
-// const FileList = () => {
-//   return (
-//     <>
-//       <div className="flex flex-col gap-y-2 items-start w-full ">
-//         {bt_file("Add file")}
-//         {bt_file("file 1")}
-//         {bt_file("file 2")}
-//         {bt_file("file 3")}
-//         {bt_file("file 4")}
-//       </div>
-//     </>
-//   );
-// };
