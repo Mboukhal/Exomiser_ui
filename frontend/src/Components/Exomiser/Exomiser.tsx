@@ -1,16 +1,21 @@
 // import { Route } from "react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./Exomiser.css";
 import { useDropzone } from "react-dropzone";
-import { TformOptions } from "./Exomiser.d";
+import { TformOptions, hpoType } from "./Exomiser.d";
 import axios from "axios";
+import AsyncSelect from "react-select/async";
+import { handleFileUpload, loadOptions } from "./utils";
+import { MultiValue } from "react-select";
 
-const hopEndpoint = "https://hpo.jax.org/api/hpo/search?q=";
 const backendEndpoint = "http://127.0.0.1:8080/api/submitForm";
 
 export const Exomiser = () => {
   const [options, setOptions] = useState<TformOptions[] | null>(null);
   const [activeForm, setActiveForm] = useState<number | null>(null);
+  const [hpo, setHpo] = useState<hpoType[]>([]);
+
+  const [selectKey, setSelectKey] = useState(0);
 
   const inputHandleChange = (fieldName: string, newValue: string) => {
     setOptions((prevOptions) => {
@@ -44,7 +49,6 @@ export const Exomiser = () => {
         }
         return option;
       });
-
       return updatedOptions;
     });
   };
@@ -86,7 +90,7 @@ export const Exomiser = () => {
             adn: prevOptions[0].adn,
             genomeAssembly: prevOptions[0].genomeAssembly,
             analysisMode: prevOptions[0].analysisMode,
-            hpo: prevOptions[0].hpo,
+            // hpo: prevOptions[0].hpo,
             probandSampleName: prevOptions[0].probandSampleName,
             modeOfInheritance: prevOptions[0].modeOfInheritance,
           };
@@ -111,7 +115,7 @@ export const Exomiser = () => {
             adn: "",
             genomeAssembly: "hg19",
             analysisMode: "PASS_ONLY",
-            hpo: "",
+            // hpo: "",
             probandSampleName: "",
             modeOfInheritance: "",
           };
@@ -131,11 +135,34 @@ export const Exomiser = () => {
     if (!shouldRemove) return;
     setOptions(null);
     setActiveForm(null);
+    setHpo([]);
   };
 
+  // id: 0,
+  // hpo: newValue.map((item) => item.value).join(","),
   const FileForm = () => {
     const opt = options && options[activeForm || 0];
     if (!opt) return <>no file</>;
+
+    const handleChange = (newDataSelect: MultiValue<hpoType>) => {
+      const data = newDataSelect[newDataSelect.length - 1];
+      // console.log(hpo);
+
+      if (
+        hpo.map((element) => {
+          if (element.label === data.label && selectKey === data.id) {
+            return false;
+          }
+        })
+      ) {
+        const newItems: hpoType = {
+          id: selectKey,
+          label: data.label,
+          value: data.value,
+        };
+        setHpo([...hpo, newItems]);
+      }
+    };
 
     return (
       <>
@@ -146,7 +173,22 @@ export const Exomiser = () => {
           {input("First name", "firstName")}
           {input("Last name", "lastName")}
           {input("ADN", "adn")}
-          {input("HPO", "hpo")}
+          <div className="flex p-2 gap-4 w-full">
+            <label className="flex items-center justify-start min-w-[167px]">
+              hop
+            </label>
+            <AsyncSelect
+              key={selectKey}
+              className=" !w-full bg-white border-4 border-gray-300 rounded-md font-medium hover:border-blue-200 focus:border-blue-400 focus:outline-none"
+              isMulti
+              cacheOptions
+              defaultOptions
+              loadOptions={loadOptions}
+              onChange={handleChange}
+              value={hpo.filter((item) => item.id === selectKey)}
+            />
+          </div>
+          {/* {input("HPO", "hpo")} */}
           {input("Proband Sample Name", "probandSampleName")}
           {input("Mode Of Inheritance", "modeOfInheritance")}
           {dropList("Genome Assembly", "genomeAssembly", ["hg19", "hg38"])}
@@ -207,7 +249,7 @@ export const Exomiser = () => {
           }`}
           onClick={() => {
             setActiveForm(id);
-            console.log(id);
+            // console.log(id);
           }}
         >
           {name}
@@ -299,29 +341,14 @@ export const Exomiser = () => {
       console.log("Backend Response:", response.data);
     } catch (error) {
       // Handle errors
-      console.log("Error sending form data:", error);
+      console.error("Error sending form data, backend");
     }
   };
 
-  // Function to handle file upload
-  const handleFileUpload = (data: TformOptions[] | null) => {
-    // Create a new FormData object
-    const formData = new FormData();
-
-    // Append the file to the FormData object
-    if (!data) return;
-
-    data.forEach((config, index) => {
-      formData.append(
-        index.toString(),
-        JSON.stringify(Object.entries(config).filter(([key]) => key !== "file"))
-      );
-      formData.append(`file${index.toString()}`, config.file);
-    });
-
-    // Send the FormData to the backend
-    sendFormData(formData);
-  };
+  useEffect(() => {
+    // Update the key whenever activeForm changes
+    setSelectKey(activeForm || 0);
+  }, [activeForm]);
 
   return (
     <div
@@ -351,7 +378,8 @@ export const Exomiser = () => {
           className="bt-fun"
           onClick={() => {
             if (!options) return;
-            handleFileUpload(options);
+            handleFileUpload(hpo, options, sendFormData);
+            // console.log(hpo);
           }}
         >
           Start

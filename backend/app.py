@@ -32,7 +32,13 @@ def save_files(files):
 @app.route('/api/submitForm', methods=['POST'])
 def submit_form():
     try:
-        save_files(request.form)
+        data = request.form
+        # print((data))
+        # save_files(data)
+            
+        for _, value in data.items():
+            print(value)
+        
         # Send a response back to the frontend if needed
         return jsonify({'message': 'Form data received successfully'}), 200
     except Exception as e:

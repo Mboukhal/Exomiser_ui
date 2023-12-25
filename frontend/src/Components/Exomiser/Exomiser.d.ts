@@ -11,3 +11,14 @@ export type TformOptions = {
   modeOfInheritance: string;
   [key: string]: string | number | { name: string } | undefined;
 };
+
+export type hpoType = {
+  id: number;
+  label: string;
+  value: string;
+};
+
+export type Option = {
+  id: string;
+  name: string;
+};
