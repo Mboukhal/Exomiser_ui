@@ -26,10 +26,8 @@ const addHpoToOptions = (hpo: hpoType[], options: TformOptions[]) => {
     const id = option.id;
     hpo.forEach((item) => {
       if (item.id === id) {
-        let hpo = options[index].hpo;
-        if (hpo) hpo = `${hpo},`;
-        hpo = `${hpo}${item.value}`;
-        options[index].hpo = hpo;
+        if (options[index].hpo) options[index].hpo += `, `;
+        options[index].hpo += `"${item.value}"`;
       }
     });
   });

@@ -1,6 +1,9 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import json
+
+from execution import set_yaml_file
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -28,16 +31,15 @@ def save_files(files):
           print('No form data received')
 
 
-
 @app.route('/api/submitForm', methods=['POST'])
 def submit_form():
     try:
         data = request.form
-        # print((data))
-        # save_files(data)
             
         for _, value in data.items():
-            print(value)
+            val_data = json.loads(value)
+            print(val_data['hpo'])
+            set_yaml_file(val_data)
         
         # Send a response back to the frontend if needed
         return jsonify({'message': 'Form data received successfully'}), 200

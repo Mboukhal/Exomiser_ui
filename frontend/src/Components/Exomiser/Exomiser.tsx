@@ -188,11 +188,10 @@ export const Exomiser = () => {
               value={hpo.filter((item) => item.id === selectKey)}
             />
           </div>
-          {/* {input("HPO", "hpo")} */}
-          {input("Proband Sample Name", "probandSampleName")}
+          {/*input("Proband Sample Name", "probandSampleName")}
           {input("Mode Of Inheritance", "modeOfInheritance")}
           {dropList("Genome Assembly", "genomeAssembly", ["hg19", "hg38"])}
-          {dropList("Analysis Mode", "analysisMode", ["PASS_ONLY"])}
+    {dropList("Analysis Mode", "analysisMode", ["PASS_ONLY"])*/}
         </div>
         <div className="flex justify-end gap-2">
           <div className=" flex flex-grow">
