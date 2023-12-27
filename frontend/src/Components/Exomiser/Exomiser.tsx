@@ -7,6 +7,8 @@ import axios from "axios";
 import AsyncSelect from "react-select/async";
 import { handleFileUpload, loadOptions } from "./utils";
 import { MultiValue } from "react-select";
+import uuid from "react-uuid";
+import { Result } from "./Result";
 
 const backendEndpoint = "http://127.0.0.1:8080/api/submitForm";
 
@@ -16,6 +18,14 @@ export const Exomiser = () => {
   const [hpo, setHpo] = useState<hpoType[]>([]);
 
   const [selectKey, setSelectKey] = useState(0);
+
+  const userId =
+    localStorage.getItem("userId") ||
+    (() => {
+      const newId = uuid();
+      localStorage.setItem("userId", newId);
+      return newId;
+    });
 
   const inputHandleChange = (fieldName: string, newValue: string) => {
     setOptions((prevOptions) => {
@@ -338,6 +348,8 @@ export const Exomiser = () => {
 
       // Handle the response from the backend
       console.log("Backend Response:", response.data);
+
+      // setActiveForm(-1);
     } catch (error) {
       // Handle errors
       console.error("Error sending form data, backend");
@@ -348,6 +360,13 @@ export const Exomiser = () => {
     // Update the key whenever activeForm changes
     setSelectKey(activeForm || 0);
   }, [activeForm]);
+
+  if (activeForm === -1)
+    return (
+      <div>
+        <Result />
+      </div>
+    );
 
   return (
     <div

@@ -1,52 +1,42 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 import json
 
-from execution import set_yaml_file
+from execution import env_setup, save_files
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-def save_files(files):
-  
-    for key in files:
-      if request.files:
-          uploaded_file_info = request.files['file' + key]
-          uploaded_file_path = uploaded_file_info.filename
-          uploaded_file_data = uploaded_file_info.read()
-
-          print()
-
-          if uploaded_file_path and uploaded_file_data:
-              file_path = f'uploads/{os.path.basename(uploaded_file_path)}'
-
-              with open(file_path, 'wb') as file:
-                  file.write(uploaded_file_data)
-
-              print('File saved successfully')
-          else:
-              print('No file data or path was provided')
-      else:
-          print('No form data received')
 
 
 @app.route('/api/submitForm', methods=['POST'])
 def submit_form():
-    try:
+    # try:
         data = request.form
-            
+        print(data.get('userId'))
+        files = request.files
+        # # for key, val in files.items():
+        # #     print(val.filename)
         for _, value in data.items():
-            val_data = json.loads(value)
-            print(val_data['hpo'])
-            set_yaml_file(val_data)
+            try:
+                val_data = json.loads(value)
+            except json.decoder.JSONDecodeError:
+                continue
+            # print(data[f'file{str(val_data["id"])}'])
+            env_setup(
+                val_data,
+                files[f'file{val_data["id"]}']
+                )
         
         # Send a response back to the frontend if needed
-        return jsonify({'message': 'Form data received successfully'}), 200
-    except Exception as e:
-        # Handle exceptions
-        print('Error processing form data:', str(e))
-        return jsonify({'error': 'Internal Server Error'}), 500
+        return jsonify({'message': 'Form data received successfully',
+                        'id': 10
+                        }), 200
+    # except Exception as e:
+    #     # Handle exceptions
+    #     print('Error processing form data:', str(e))
+    #     return jsonify({'error': 'Internal Server Error'}), 500
 
 if __name__ == '__main__':
     # Run the Flask application on port 5000

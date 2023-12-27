@@ -46,6 +46,7 @@ export const handleFileUpload = (
 
   addHpoToOptions(hpo, data);
 
+  formData.append("userId", "test01");
   data.forEach((config, index) => {
     const obj: Record<string, string | number> = {
       id: index,
@@ -61,6 +62,7 @@ export const handleFileUpload = (
 
     formData.append(index.toString(), JSON.stringify(obj));
     formData.append(`file${index.toString()}`, config.file);
+    // console.log(`file${index.toString()}`, config.file);
   });
 
   // Send the FormData to the backend
