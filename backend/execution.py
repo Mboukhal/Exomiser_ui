@@ -3,13 +3,15 @@ from flask import request
 from ganerate_yml import ganerate_yml
 from uuid import uuid4
 
-CLI = "java -Xms2g -Xmx4g -jar exomiser-cli-13.3.0.jar --analysis "
+EXO_PATH = "../exomiser-cli-13.3.0/"
+
+CLI = f"cd {EXO_PATH}; java -Xms2g -Xmx4g -jar exomiser-cli-13.3.0.jar --analysis "
 
 FOLDER = " --output-directory "
 
 EXO_FOLDER = "../exomiser-cli-13.3.0"
 
-EXO_RESULT = EXO_FOLDER + "/web_results"
+EXO_RESULT = "web_results"
 
 UPLOAD_FOLDER = "uploads"
 
@@ -27,7 +29,8 @@ def env_setup(data, file):
      
     
     # create folder for result
-    folder_name = result_dir + "/" + str(data['id'])
+    folder_name = EXO_FOLDER  + '/' + result_dir
+    print(folder_name)
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
         
@@ -36,44 +39,47 @@ def env_setup(data, file):
         os.makedirs(tmp)
         
     # upload 'vcf' file
-    file_path = f'{tmp}/{str(data["id"])}_{os.path.basename(file.filename)}'
+    vcf_file_name = os.path.basename(file.filename)
+    file_path = f'{tmp}/{vcf_file_name}'
     
     file.save(file_path)
-    print(tmp)
+    print('-->  ', tmp)
     
-    print(TMP_DIR + '/' + str(userId))
+    # print(TMP_DIR + '/' + file_path + '.yml')
         
     print('OK')
+    
+    
+    yml_file = TMP_DIR + '/' + str(userId) + '/' + vcf_file_name + '.yml'
+    print(yml_file)
+    
     ganerate_yml(
         file_name=file.filename,
-        id=str(data['id']),
+        req_id=str(userId),
         hop=data['hpo'],
-        path=tmp,
-        yaml_path=TMP_DIR + '/' + str(userId),
+        path=TMP_DIR,
+        exo_path = EXO_FOLDER,
     )
     
+    return {
+        'id': str(userId),
+        'result': result_dir,
+        'tmp': yml_file
+        }
+
     
-    print(data)
-    
-    
+def exo_execute(data):
+    for i in data:
+        
+        cli = CLI + "'" +  i['tmp'] + "'"  + FOLDER + i['result']
+        
+        os.system(cli)
+        print()
+        print()
+        print(cli)
 
-def save_files(files):
-  
-    for key in files:
-      if request.files:
-          uploaded_file_info = request.files['file' + key]
-          uploaded_file_path = uploaded_file_info.filename
-          uploaded_file_data = uploaded_file_info.read()
-
-
-          if uploaded_file_path and uploaded_file_data:
-              file_path = f'{UPLOAD_FOLDER}/{os.path.basename(uploaded_file_path)}'
-
-              with open(file_path, 'wb') as file:
-                  file.write(uploaded_file_data)
-
-              print('File saved successfully')
-          else:
-              print('No file data or path was provided')
-      else:
-          print('No form data received')
+        print()
+        print()
+        print()
+        print()
+        print()

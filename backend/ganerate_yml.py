@@ -1,11 +1,11 @@
 import os
 
-def ganerate_yml(file_name: str, path:str, id:str, hop:str="", yaml_path:str=""):
+def ganerate_yml(file_name: str, path:str, req_id:str, hop:str="", exo_path:str=""):
   
   file = f"""
-  analysis:
+analysis:
   genomeAssembly: hg19
-  vcf: {yaml_path}/{file_name}
+  vcf: {path}/{req_id}/{file_name}
   ped:
   proband:
   hpoIds: [{hop}]
@@ -81,7 +81,7 @@ outputOptions:
 
   """
 
-  tmp_path = f"{path}/{id}_{file_name}.yml"
+  tmp_path = f"{exo_path}/{path}/{req_id}/{file_name}.yml"
   
   with open(tmp_path, "+a") as f:
     f.write(file)
