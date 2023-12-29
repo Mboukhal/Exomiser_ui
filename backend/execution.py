@@ -29,14 +29,20 @@ def env_setup(data, file):
      
     
     # create folder for result
-    folder_name = EXO_FOLDER  + '/' + result_dir
-    print(folder_name)
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+    res_dir = EXO_FOLDER  + '/' + result_dir
+    print(res_dir)
+    if not os.path.exists(res_dir):
+        os.makedirs(res_dir)
         
     # create tmp folder
     if not os.path.exists(tmp):
         os.makedirs(tmp)
+    
+    # set 'fire_name' 'last_name' 'adn' in text file
+    with open(f'{res_dir}/info.txt', 'w') as f:
+        f.write(f'First Name: {data["firstName"]}\n')
+        f.write(f'Last Name: {data["lastName"]}\n')
+        f.write(f'ADN: {data["adn"]}\n')
         
     # upload 'vcf' file
     vcf_file_name = os.path.basename(file.filename)

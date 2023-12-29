@@ -77,9 +77,10 @@ outputOptions:
   outputContributingVariantsOnly: false
   numGenes: 0
   outputFileName: Pfeiffer-hiphive-exome-PASS_ONLY
-  outputFormats: [TSV_VARIANT, VCF]
+  outputFormats: [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]
 
-  """
+"""
+  # outputFormats: [TSV_VARIANT, VCF]
 
   tmp_path = f"{exo_path}/{path}/{req_id}/{file_name}.yml"
   
