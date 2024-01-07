@@ -7,7 +7,6 @@ import axios from "axios";
 import AsyncSelect from "react-select/async";
 import { handleFileUpload, loadOptions } from "./utils";
 import { MultiValue } from "react-select";
-import uuid from "react-uuid";
 import { Result } from "./Result";
 
 const backendEndpoint = "http://127.0.0.1:8080/api/submitForm";
@@ -18,14 +17,6 @@ export const Exomiser = () => {
   const [hpo, setHpo] = useState<hpoType[]>([]);
 
   const [selectKey, setSelectKey] = useState(0);
-
-  const userId =
-    localStorage.getItem("userId") ||
-    (() => {
-      const newId = uuid();
-      localStorage.setItem("userId", newId);
-      return newId;
-    });
 
   const inputHandleChange = (fieldName: string, newValue: string) => {
     setOptions((prevOptions) => {
@@ -45,58 +36,8 @@ export const Exomiser = () => {
     });
   };
 
-  const UpdateDropList = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = event.target;
-    setOptions((prevOptions) => {
-      if (!prevOptions) return prevOptions;
-
-      const updatedOptions = prevOptions.map((option, index) => {
-        if (index === (activeForm || 0)) {
-          return {
-            ...option,
-            [name]: value,
-          };
-        }
-        return option;
-      });
-      return updatedOptions;
-    });
-  };
-
-  const dropList = (name: string, id: string, optionsList: string[]) => {
-    const opt = options && options[activeForm || 0][id];
-    if (!opt) return;
-    return (
-      <div className="flex p-2 gap-4 w-full">
-        <label className="flex items-center justify-start min-w-[167px]">
-          {name}
-        </label>
-        <select
-          className="text-center input-style bg-white"
-          name={id}
-          onChange={UpdateDropList}
-          value={opt?.toString()}
-        >
-          {optionsList.map((option, index) => (
-            <option value={option} key={index}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
-    );
-  };
-
   const UpdateSetThisToAllFiles = () => {
-    const data = hpo.filter((item) => item.id === selectKey)[0];
-    console.log(hpo);
-    setHpo((prevHpo) =>
-      prevHpo.map((item) => {
-        if (item.id !== selectKey) return item;
-        return data;
-      })
-    );
-
+    console.log(selectKey, hpo);
     setOptions((prevOptions) => {
       if (!prevOptions) return prevOptions;
 
@@ -182,32 +123,6 @@ export const Exomiser = () => {
         setHpo([...hpo, newItems]);
         return;
       }
-
-      // // Find the removed items by comparing the previous hpo array with the new one
-      // const removedItems = hpo.filter(
-      //   (item) => !newDataSelect.some((newItem) => newItem.id === item.id)
-      // );
-
-      // // Remove the items from the hpo array
-      // setHpo((prevHpo) =>
-      //   prevHpo.filter((item) => !removedItems.includes(item))
-      // );
-
-      // // Add the newly selected items to the hpo array
-      // const newItems: hpoType[] = newDataSelect
-      //   .filter((data) => data && data.label) // Filter out items with undefined or null values
-      //   .map((data) => ({
-      //     id: data.id,
-      //     label: data.label,
-      //     value: data.value,
-      //   }));
-
-      // setHpo((prevHpo) => [...prevHpo, ...newItems]);
-
-      // // Filter out null values (optional, depending on your use case)
-      // const validNewItems = newItems.filter((item) => item !== null);
-
-      // setHpo((prevHpo) => [...prevHpo, ...validNewItems]);
     };
 
     return (
@@ -308,7 +223,14 @@ export const Exomiser = () => {
         <button
           className={`bt-file font-light ${
             activeForm === id && ` bg-blue-300 text-slate-600 w-fit-content`
-          }`}
+          } ${
+            options &&
+            (options[id].firstName === "" ||
+              options[id].adn === "" ||
+              hpo.filter((item) => item.id == id).length === 0) &&
+            `bg-red-500`
+          }
+          `}
           onClick={() => {
             setActiveForm(id);
             // console.log(id);
