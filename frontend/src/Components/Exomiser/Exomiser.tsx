@@ -9,12 +9,17 @@ import { handleFileUpload, loadOptions } from "./utils";
 import { MultiValue } from "react-select";
 import { Result } from "./Result";
 
-const backendEndpoint = "http://127.0.0.1:8080/api/submitForm";
+const current_url = window.location.href;
+const domain_name = new URL(current_url).hostname;
+
+const BACKEND = "http://" + domain_name + ":8080";
 
 export const Exomiser = () => {
   const [options, setOptions] = useState<TformOptions[] | null>(null);
   const [activeForm, setActiveForm] = useState<number | null>(null);
   const [hpo, setHpo] = useState<hpoType[]>([]);
+
+  const [zipFile, setZipFile] = useState<string[] | null>(null);
 
   const [selectKey, setSelectKey] = useState(0);
 
@@ -37,7 +42,20 @@ export const Exomiser = () => {
   };
 
   const UpdateSetThisToAllFiles = () => {
-    console.log(selectKey, hpo);
+    // hpo
+    const hpoValue = [...hpo].filter((item) => item.id === selectKey);
+
+    if (!options) return;
+    setHpo([]);
+
+    for (let index = 0; index < options.length; index++) {
+      hpoValue.map((item) => {
+        const newItem = { ...item };
+        newItem.id = index;
+        setHpo((prev) => [...prev, newItem]);
+      });
+    }
+
     setOptions((prevOptions) => {
       if (!prevOptions) return prevOptions;
 
@@ -56,7 +74,6 @@ export const Exomiser = () => {
         }
         return option;
       });
-
       return updatedOptions;
     });
   };
@@ -102,7 +119,15 @@ export const Exomiser = () => {
   // hpo: newValue.map((item) => item.value).join(","),
   const FileForm = () => {
     const opt = options && options[activeForm || 0];
-    if (!opt) return <>no file</>;
+    if (!opt)
+      return (
+        <div
+          className="flex justify-center items-center h-full select-none"
+          style={{ fontSize: "300%" }}
+        >
+          No file
+        </div>
+      );
 
     const handleChange = (newDataSelect: MultiValue<hpoType>) => {
       // console.log(newDataSelect);
@@ -225,11 +250,15 @@ export const Exomiser = () => {
             activeForm === id && ` bg-blue-300 text-slate-600 w-fit-content`
           } ${
             options &&
-            (options[id].firstName === "" ||
-              options[id].adn === "" ||
-              hpo.filter((item) => item.id == id).length === 0) &&
-            `bg-red-500`
+            (options[id].firstName === "" || options[id].adn === "") &&
+            `bg-yellow-300 !text-black ${activeForm === id && `!bg-yellow-100`}`
           }
+           ${
+             hpo.filter((item) => item.id == id).length === 0 &&
+             `!bg-red-500 !text-white ${
+               activeForm === id && `!bg-red-300 !text-white`
+             }`
+           }
           `}
           onClick={() => {
             setActiveForm(id);
@@ -317,7 +346,7 @@ export const Exomiser = () => {
   const sendFormData = async (formData: FormData) => {
     try {
       // Make a POST request to the backend endpoint
-      const response = await axios.post(backendEndpoint, formData, {
+      const response = await axios.post(BACKEND + "/api/submitForm", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -325,6 +354,9 @@ export const Exomiser = () => {
 
       // Handle the response from the backend
       console.log("Backend Response:", response.data);
+
+      setZipFile(response.data["files"]);
+      setActiveForm(-1);
 
       // setActiveForm(-1);
     } catch (error) {
@@ -341,7 +373,7 @@ export const Exomiser = () => {
   if (activeForm === -1)
     return (
       <div>
-        <Result />
+        <Result backend={BACKEND} files={zipFile} />
       </div>
     );
 

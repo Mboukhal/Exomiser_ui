@@ -11,6 +11,8 @@ FOLDER = " --output-directory "
 
 EXO_FOLDER = "../exomiser-cli-13.3.0"
 
+DOWNLOAD_FOLDER = "download"
+
 EXO_RESULT = "web_results"
 
 UPLOAD_FOLDER = "uploads"
@@ -30,7 +32,7 @@ def env_setup(data, file):
     
     # create folder for result
     res_dir = EXO_FOLDER  + '/' + result_dir
-    print(res_dir)
+    # print(res_dir)
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)
         
@@ -49,15 +51,15 @@ def env_setup(data, file):
     file_path = f'{tmp}/{vcf_file_name}'
     
     file.save(file_path)
-    print('-->  ', tmp)
+    # print('-->  ', tmp)
     
     # print(TMP_DIR + '/' + file_path + '.yml')
         
-    print('OK')
+    # print('OK')
     
     
     yml_file = TMP_DIR + '/' + str(userId) + '/' + vcf_file_name + '.yml'
-    print(yml_file)
+    # print(yml_file)
     
     ganerate_yml(
         file_name=file.filename,
@@ -70,22 +72,63 @@ def env_setup(data, file):
     return {
         'id': str(userId),
         'result': result_dir,
-        'tmp': yml_file
+        'tmp': yml_file,
+        'file_name': vcf_file_name,
         }
 
-    
-def exo_execute(data):
-    for i in data:
-        
-        cli = CLI + "'" +  i['tmp'] + "'"  + FOLDER + i['result']
-        
-        os.system(cli)
-        print()
-        print()
-        print(cli)
+from threading import Thread
+import subprocess
 
-        print()
-        print()
-        print()
-        print()
-        print()
+def exo_execute(data):
+    res = []
+    error = []
+
+    def execute_single_task(i):
+        cli = CLI + "'" + i['tmp'] + "'" + FOLDER + i['result']
+        try:
+            subprocess.run(cli, shell=True)
+            res.append({"files_path": i['result'], "file_name": i['file_name']})
+        except subprocess.CalledProcessError:
+            error.append('file_name')
+
+    # Create a list to hold the thread objects
+    threads = []
+
+    # Create and start a thread for each item in data
+    for item in data:
+        
+        thread = Thread(target=execute_single_task, args=(item,))
+        threads.append(thread)
+        if len(threads) >= 10:
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+            threads = []
+            
+    if len(threads) > 0:
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+    return res, error
+
+
+
+import shutil
+
+def zip_this(data):
+    
+    files = []
+    
+    for content in data:
+        
+        folder_path = EXO_FOLDER  + '/' + content['files_path']
+        output_zip_path = DOWNLOAD_FOLDER + '/' + content['file_name']
+        shutil.make_archive(output_zip_path, 'zip', folder_path)
+        files.append(content['file_name'] + '.zip')
+    
+    shutil.rmtree(EXO_FOLDER + "/" + TMP_DIR)
+    shutil.rmtree(EXO_FOLDER + "/" + EXO_RESULT)
+        
+    return files
