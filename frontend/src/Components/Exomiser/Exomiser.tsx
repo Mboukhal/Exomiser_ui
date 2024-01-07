@@ -88,6 +88,15 @@ export const Exomiser = () => {
   };
 
   const UpdateSetThisToAllFiles = () => {
+    const data = hpo.filter((item) => item.id === selectKey)[0];
+    console.log(hpo);
+    setHpo((prevHpo) =>
+      prevHpo.map((item) => {
+        if (item.id !== selectKey) return item;
+        return data;
+      })
+    );
+
     setOptions((prevOptions) => {
       if (!prevOptions) return prevOptions;
 
@@ -95,14 +104,13 @@ export const Exomiser = () => {
         if (index !== (activeForm || 0)) {
           return {
             ...option,
-            firstName: prevOptions[0].firstName,
-            lastName: prevOptions[0].lastName,
-            adn: prevOptions[0].adn,
-            genomeAssembly: prevOptions[0].genomeAssembly,
-            analysisMode: prevOptions[0].analysisMode,
-            // hpo: prevOptions[0].hpo,
-            probandSampleName: prevOptions[0].probandSampleName,
-            modeOfInheritance: prevOptions[0].modeOfInheritance,
+            firstName: prevOptions[selectKey].firstName,
+            lastName: prevOptions[selectKey].lastName,
+            adn: prevOptions[selectKey].adn,
+            genomeAssembly: prevOptions[selectKey].genomeAssembly,
+            analysisMode: prevOptions[selectKey].analysisMode,
+            probandSampleName: prevOptions[selectKey].probandSampleName,
+            modeOfInheritance: prevOptions[selectKey].modeOfInheritance,
           };
         }
         return option;
@@ -113,6 +121,7 @@ export const Exomiser = () => {
   };
 
   const updateClear = () => {
+    setHpo(hpo.filter((item) => item.id !== selectKey));
     setOptions((prevOptions) => {
       if (!prevOptions) return prevOptions;
 
@@ -155,23 +164,50 @@ export const Exomiser = () => {
     if (!opt) return <>no file</>;
 
     const handleChange = (newDataSelect: MultiValue<hpoType>) => {
+      // console.log(newDataSelect);
       const data = newDataSelect[newDataSelect.length - 1];
-      // console.log(hpo);
 
-      if (
-        hpo.map((element) => {
-          if (element.label === data.label && selectKey === data.id) {
-            return false;
-          }
-        })
-      ) {
+      const isSet = hpo.some(
+        (item) => item.id === selectKey && item.label === data.label
+      );
+
+      // console.log(!isSet);
+
+      if (!isSet) {
         const newItems: hpoType = {
           id: selectKey,
           label: data.label,
           value: data.value,
         };
         setHpo([...hpo, newItems]);
+        return;
       }
+
+      // // Find the removed items by comparing the previous hpo array with the new one
+      // const removedItems = hpo.filter(
+      //   (item) => !newDataSelect.some((newItem) => newItem.id === item.id)
+      // );
+
+      // // Remove the items from the hpo array
+      // setHpo((prevHpo) =>
+      //   prevHpo.filter((item) => !removedItems.includes(item))
+      // );
+
+      // // Add the newly selected items to the hpo array
+      // const newItems: hpoType[] = newDataSelect
+      //   .filter((data) => data && data.label) // Filter out items with undefined or null values
+      //   .map((data) => ({
+      //     id: data.id,
+      //     label: data.label,
+      //     value: data.value,
+      //   }));
+
+      // setHpo((prevHpo) => [...prevHpo, ...newItems]);
+
+      // // Filter out null values (optional, depending on your use case)
+      // const validNewItems = newItems.filter((item) => item !== null);
+
+      // setHpo((prevHpo) => [...prevHpo, ...validNewItems]);
     };
 
     return (
@@ -188,16 +224,33 @@ export const Exomiser = () => {
               hop
             </label>
             <AsyncSelect
-              key={selectKey}
+              key={Math.random()}
               className=" !w-full bg-white border-4 border-gray-300 rounded-md font-medium hover:border-blue-200 focus:border-blue-400 focus:outline-none"
               isMulti
-              cacheOptions
+              // cacheOptions
               defaultOptions
               loadOptions={loadOptions}
               onChange={handleChange}
               value={hpo.filter((item) => item.id === selectKey)}
+              components={{
+                MultiValueRemove: () => null,
+                DropdownIndicator: () => null,
+                ClearIndicator: () => null,
+              }}
             />
           </div>
+          {/* clear hpo*/}
+          <div className="flex p-2 gap-4 w-full justify-end">
+            <button
+              className="bt-fun"
+              onClick={() => {
+                setHpo(hpo.filter((item) => item.id !== selectKey));
+              }}
+            >
+              clear hpo
+            </button>
+          </div>
+
           {/*input("Proband Sample Name", "probandSampleName")}
           {input("Mode Of Inheritance", "modeOfInheritance")}
           {dropList("Genome Assembly", "genomeAssembly", ["hg19", "hg38"])}
@@ -299,8 +352,10 @@ export const Exomiser = () => {
       const newfile: TformOptions[] = [];
       // Add files to options
       setDupFilter.forEach((file, index) => {
+        const newId = (options && options?.length + index) || index;
+
         newfile.push({
-          id: (options && options?.length + index) || index,
+          id: newId,
           file: file,
           firstName: "",
           lastName: "",
