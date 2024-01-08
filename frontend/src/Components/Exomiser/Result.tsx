@@ -35,6 +35,7 @@ export const Result = ({
       link.href = filePath;
       link.download = filePath.split("/").pop() || `downloaded_file_${index}`;
       divElements.push(link);
+      console.log(link);
     });
 
     // Function to asynchronously handle each link
@@ -55,8 +56,8 @@ export const Result = ({
 
             // Process the next link
             processLinks(index + 1);
-          }, 20); // Adjust the delay as needed
-        }, 20); // Adjust the delay as needed
+          }, 200); // Adjust the delay as needed
+        }, 200); // Adjust the delay as needed
       }
     };
 
@@ -65,9 +66,9 @@ export const Result = ({
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="fixed flex w-full h-full top-0 left-0 flex-col gap-6 overflow-auto pt-8">
       <button
-        className="flex items-center justify-center border border-gray-500 mx-4 p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600"
+        className="flex items-center justify-center border border-gray-500 mx-4 p-2 rounded-sm bg-blue-500 text-white hover:bg-blue-600"
         onClick={handleDownloadAll}
       >
         Download All
@@ -87,6 +88,19 @@ export const Result = ({
             </label>
           </div>
         ))}
+    </div>
+  );
+};
+
+import io from "socket.io-client";
+
+export const Progress = () => {
+  return (
+    <div
+      className="flex justify-center items-center h-full select-none"
+      style={{ fontSize: "300%" }}
+    >
+      Progress
     </div>
   );
 };

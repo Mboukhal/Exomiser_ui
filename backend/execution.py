@@ -99,7 +99,7 @@ def exo_execute(data):
         
         thread = Thread(target=execute_single_task, args=(item,))
         threads.append(thread)
-        if len(threads) >= 10:
+        if len(threads) >= 4:
             for thread in threads:
                 thread.start()
             for thread in threads:

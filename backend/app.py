@@ -55,4 +55,5 @@ def download_zip(filename):
 
 if __name__ == '__main__':
     # Run the Flask application on port 5000
-    app.run(debug=True, port= 8080)
+    app.run( debug=True, port=8080)
+    # host="0.0.0.0",

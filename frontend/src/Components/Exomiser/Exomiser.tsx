@@ -7,7 +7,7 @@ import axios from "axios";
 import AsyncSelect from "react-select/async";
 import { handleFileUpload, loadOptions } from "./utils";
 import { MultiValue } from "react-select";
-import { Result } from "./Result";
+import { Result, Progress } from "./Result";
 
 const current_url = window.location.href;
 const domain_name = new URL(current_url).hostname;
@@ -119,6 +119,7 @@ export const Exomiser = () => {
   // hpo: newValue.map((item) => item.value).join(","),
   const FileForm = () => {
     const opt = options && options[activeForm || 0];
+    if (activeForm === -2) return <Progress />;
     if (!opt)
       return (
         <div
@@ -346,6 +347,7 @@ export const Exomiser = () => {
   const sendFormData = async (formData: FormData) => {
     try {
       // Make a POST request to the backend endpoint
+      setActiveForm(-2);
       const response = await axios.post(BACKEND + "/api/submitForm", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
