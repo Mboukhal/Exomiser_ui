@@ -12,7 +12,7 @@ import { Result, Progress } from "./Result";
 const current_url = window.location.href;
 const domain_name = new URL(current_url).hostname;
 
-const BACKEND = "http://" + domain_name + ":8080";
+const BACKEND = `http://${domain_name}:5001`;
 
 export const Exomiser = () => {
   const [options, setOptions] = useState<TformOptions[] | null>(null);
@@ -119,7 +119,6 @@ export const Exomiser = () => {
   // hpo: newValue.map((item) => item.value).join(","),
   const FileForm = () => {
     const opt = options && options[activeForm || 0];
-    if (activeForm === -2) return <Progress />;
     if (!opt)
       return (
         <div
@@ -162,7 +161,7 @@ export const Exomiser = () => {
           {input("ADN", "adn")}
           <div className="flex p-2 gap-4 w-full">
             <label className="flex items-center justify-start min-w-[167px]">
-              hop
+              HPO
             </label>
             <AsyncSelect
               key={Math.random()}
@@ -199,7 +198,10 @@ export const Exomiser = () => {
         </div>
         <div className="flex justify-end gap-2">
           <div className=" flex flex-grow">
-            <button className="bt-fun" onClick={UpdateSetThisToAllFiles}>
+            <button
+              className={`bt-fun ${options && options.length <= 1 && `hidden`}`}
+              onClick={UpdateSetThisToAllFiles}
+            >
               Set all
             </button>
           </div>
@@ -207,7 +209,7 @@ export const Exomiser = () => {
             Clear
           </button>
           <button
-            className="bt-fun"
+            className={`bt-fun ${options && options.length <= 1 && `hidden`}`}
             onClick={() => {
               activeForm !== null && options.length - 1 > activeForm
                 ? setActiveForm(activeForm + 1)
@@ -252,11 +254,11 @@ export const Exomiser = () => {
           } ${
             options &&
             (options[id].firstName === "" || options[id].adn === "") &&
-            `bg-yellow-300 !text-black ${activeForm === id && `!bg-yellow-100`}`
+            `bg-yellow-300 !text-black ${activeForm === id && `bg-yellow-100`}`
           }
            ${
              hpo.filter((item) => item.id == id).length === 0 &&
-             `!bg-red-500 !text-white ${
+             `bg-red-500 !text-white ${
                activeForm === id && `!bg-red-300 !text-white`
              }`
            }
@@ -273,17 +275,18 @@ export const Exomiser = () => {
   };
 
   const onDrop = useCallback(
+    // files validation ".vcf" || ".gz"
     (acceptedFiles: File[]) => {
       // Filter only files with the .vcf extension
-      const vcfFiles = acceptedFiles.filter((file) =>
-        file.name.endsWith(".vcf")
+      const vcfFiles = acceptedFiles.filter(
+        (file) => file.name.endsWith(".vcf") || file.name.endsWith(".gz")
       );
 
       // Remove duplicates
       const dupFilter = [...new Set(vcfFiles)];
       // Alert for non-.vcf files
       const nonVcfFiles = acceptedFiles.filter(
-        (file) => !file.name.endsWith(".vcf")
+        (file) => !file.name.endsWith(".vcf") && !file.name.endsWith(".gz")
       );
       if (nonVcfFiles.length > 0) {
         alert(
@@ -333,12 +336,9 @@ export const Exomiser = () => {
     return (
       <div className="bt-check-box">
         {/* <input type="checkbox" value="" className="check-box"></input> */}
-        <div
-          {...getRootProps()}
-          className="bt-file bg-blue-500 border-2 border-black whitespace-nowrap "
-        >
+        <div className="bt-file bg-blue-500 border-2 border-black whitespace-nowrap ">
           <input {...getInputProps()} />
-          <span className="px-12"> Add Files </span>
+          <span className="px-5">Add Files (.vcf or .gz)</span>
         </div>
       </div>
     );
@@ -379,13 +379,18 @@ export const Exomiser = () => {
       </div>
     );
 
+  if (activeForm === -2) return <Progress backend={BACKEND} />;
+
   return (
     <div
       className="flex flex-col w-full p-[20px] "
       style={{ height: "calc(100% - 100px)" }}
     >
       <div className="flex w-full" style={{ height: "calc(100% - 50px)" }}>
-        <div className="min-w-[30%] md:min-w-fit border-4 main ">
+        <div
+          className="min-w-[30%] md:min-w-fit border-4 main"
+          {...getRootProps()}
+        >
           <div className="flex flex-col w-full gap-y-2 items-start ">
             {btAddFile()}
             {options && options.length !== 0 && (

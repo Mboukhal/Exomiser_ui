@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import io from "socket.io-client";
+
 export const Result = ({
   files,
   backend,
@@ -9,13 +12,10 @@ export const Result = ({
 
   const handleDownload = (filePath?: string) => () => {
     if (filePath) {
-      // Create a temporary link and click it to trigger the download
-      console.log(filePath);
       const link = document.createElement("a");
       link.href = filePath;
       link.download = filePath.split("/").pop() || "downloaded_file"; // Provide a default if filename is not available
       document.body.appendChild(link);
-      // console.log(link);
       link.click();
       document.body.removeChild(link);
     }
@@ -35,7 +35,6 @@ export const Result = ({
       link.href = filePath;
       link.download = filePath.split("/").pop() || `downloaded_file_${index}`;
       divElements.push(link);
-      console.log(link);
     });
 
     // Function to asynchronously handle each link
@@ -45,6 +44,8 @@ export const Result = ({
 
         // Append the link to the body
         document.body.appendChild(link);
+
+        const timming = 200;
 
         // Trigger the click event after a delay
         setTimeout(() => {
@@ -56,13 +57,27 @@ export const Result = ({
 
             // Process the next link
             processLinks(index + 1);
-          }, 200); // Adjust the delay as needed
-        }, 200); // Adjust the delay as needed
+          }, timming); // Adjust the delay as needed
+        }, timming); // Adjust the delay as needed
       }
     };
 
     // Start processing links from the beginning
     processLinks(0);
+
+    // const link = document.createElement("a");
+    // link.href = backend + "/clean";
+    // link.click();
+    // document.body.removeChild(link);
+  };
+
+  const handleRemoveAll = () => {
+    const link = document.createElement("a");
+    link.href = backend + "/clean";
+    link.click();
+    document.body.removeChild(link);
+    // go to home
+    window.location.href = "/";
   };
 
   return (
@@ -88,19 +103,38 @@ export const Result = ({
             </label>
           </div>
         ))}
+      <button
+        className="flex items-center justify-center border border-gray-500 mx-4 p-2 rounded-sm bg-red-500 text-white hover:bg-red-600"
+        onClick={handleRemoveAll}
+      >
+        Remove All
+      </button>
     </div>
   );
 };
 
-import io from "socket.io-client";
+export const Progress = ({ backend }: { backend: string }) => {
+  const [progress, setProgress] = useState<string>("");
 
-export const Progress = () => {
+  useEffect(() => {
+    const socket = io(backend);
+
+    socket.on("progress_update", (data) => {
+      setProgress(`${data.progress}/${data.total}`);
+      // console.log(`Received progress update: ${data.progress}`);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [backend]);
+
   return (
     <div
-      className="flex justify-center items-center h-full select-none"
+      className="fixed flex justify-center items-center w-full h-full top-0 left-0 flex-col gap-6 overflow-auto pt-8 select-none"
       style={{ fontSize: "300%" }}
     >
-      Progress
+      {progress}
     </div>
   );
 };

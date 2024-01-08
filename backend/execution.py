@@ -2,6 +2,7 @@ import os
 from flask import request
 from ganerate_yml import ganerate_yml
 from uuid import uuid4
+import shutil
 
 EXO_PATH = "../exomiser-cli-13.3.0/"
 
@@ -75,47 +76,6 @@ def env_setup(data, file):
         'tmp': yml_file,
         'file_name': vcf_file_name,
         }
-
-from threading import Thread
-import subprocess
-
-def exo_execute(data):
-    res = []
-    error = []
-
-    def execute_single_task(i):
-        cli = CLI + "'" + i['tmp'] + "'" + FOLDER + i['result']
-        try:
-            subprocess.run(cli, shell=True)
-            res.append({"files_path": i['result'], "file_name": i['file_name']})
-        except subprocess.CalledProcessError:
-            error.append('file_name')
-
-    # Create a list to hold the thread objects
-    threads = []
-
-    # Create and start a thread for each item in data
-    for item in data:
-        
-        thread = Thread(target=execute_single_task, args=(item,))
-        threads.append(thread)
-        if len(threads) >= 4:
-            for thread in threads:
-                thread.start()
-            for thread in threads:
-                thread.join()
-            threads = []
-            
-    if len(threads) > 0:
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
-    return res, error
-
-
-
-import shutil
 
 def zip_this(data):
     
