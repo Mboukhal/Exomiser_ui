@@ -118,7 +118,7 @@ export const Progress = ({ backend }: { backend: string }) => {
     const socket = io(backend);
 
     socket.on("progress_update", (data) => {
-      setProgress(`In progress - ${data.progress}/${data.total}`);
+      setProgress(`In progress ${data.progress}/${data.total}`);
     });
 
     return () => {

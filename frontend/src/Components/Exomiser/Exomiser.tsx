@@ -335,7 +335,6 @@ export const Exomiser = () => {
   const btAddFile = () => {
     return (
       <div className="bt-check-box select-none cursor-pointer">
-        {/* <input type="checkbox" value="" className="check-box"></input> */}
         <div className="bt-file bg-blue-500 border-2 border-black whitespace-nowrap ">
           <input {...getInputProps()} />
           <span className="px-5">Add Files (.vcf or .gz)</span>
