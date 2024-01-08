@@ -76,8 +76,6 @@ export const Result = ({
     link.href = backend + "/clean";
     link.click();
     document.body.removeChild(link);
-    // go to home
-    window.location.href = "/";
   };
 
   return (
@@ -120,8 +118,7 @@ export const Progress = ({ backend }: { backend: string }) => {
     const socket = io(backend);
 
     socket.on("progress_update", (data) => {
-      setProgress(`${data.progress}/${data.total}`);
-      // console.log(`Received progress update: ${data.progress}`);
+      setProgress(`In progress - ${data.progress}/${data.total}`);
     });
 
     return () => {
@@ -132,7 +129,7 @@ export const Progress = ({ backend }: { backend: string }) => {
   return (
     <div
       className="fixed flex justify-center items-center w-full h-full top-0 left-0 flex-col gap-6 overflow-auto pt-8 select-none"
-      style={{ fontSize: "300%" }}
+      style={{ fontSize: "400%" }}
     >
       {progress}
     </div>

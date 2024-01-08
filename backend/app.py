@@ -1,9 +1,8 @@
 import os
-from flask import Flask, redirect, request, jsonify, send_file, url_for
+from flask import Flask, redirect, request, jsonify, send_file
 from flask_cors import CORS
 import json
 from flask_socketio import SocketIO
-import shutil
 from execution import env_setup, zip_this, CLI, FOLDER
 
 from threading import Thread
@@ -28,7 +27,6 @@ def submit_form():
                 val_data = json.loads(value)
             except json.decoder.JSONDecodeError:
                 continue
-            # print(data[f'file{str(val_data["id"])}'])
             files_end.append(env_setup(
                 val_data,
                 files[f'file{val_data["id"]}']
@@ -73,8 +71,11 @@ def clean_download_zip():
                     os.rmdir(file_path)
             except Exception as e:
                 print(f"Error removing file {file}: {e}")
-    return jsonify({'message': 'OK'}), 200
-
+    # Extract the scheme, host, and port from the incoming request
+    
+    frontend_url = request.referrer
+    # Redirect the user to the frontend
+    return redirect(frontend_url)
 
 @socketio.on('progress_update')
 def exo_execute(data):
